@@ -1,8 +1,10 @@
 {
   "name": "@chrisdnm/rn-simple-bottom-sheet",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "main": "index.tsx",
   "license": "THE BEER-WARE LICENSE",
+  "repository": "https://github.com/Chris-D-M/rn-simple-bottom-sheet",
+  "homepage": "https://github.com/Chris-D-M/rn-simple-bottom-sheet",
   "keywords": [
     "react-component",
     "react-native",

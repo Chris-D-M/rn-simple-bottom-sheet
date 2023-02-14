@@ -50,6 +50,7 @@ interface IProps {
     modalProps?: ModalProps;
     animationDuration?: number;
     springMass?: number;
+    onAutoHeight?: (height: number) => void;
 }
 
 const Root = styled(Animated.createAnimatedComponent(Pressable))`
@@ -152,6 +153,8 @@ export default forwardRef<IBottomSheetModalRef, IProps>(function (props, ref) {
         nowHeight.current = modalHeight.value;
 
         if (props.snapPoints) {
+            let h = 0;
+
             const minFilteredArr = props.snapPoints.filter(
                 s => s <= height - nowHeight.current
             );
@@ -161,25 +164,39 @@ export default forwardRef<IBottomSheetModalRef, IProps>(function (props, ref) {
             ];
 
             if (props.snapPoints?.[0] && !props.snapPoints?.[1]) {
-                nowHeight.current = height - props.snapPoints[0];
-                modalHeight.value = withSpring(height - props.snapPoints[0], {
+                h = height - props.snapPoints[0];
+
+                nowHeight.current = h;
+                modalHeight.value = withSpring(h, {
                     mass: props.springMass ?? 0.7,
                 });
+
+                if (props.onAutoHeight) {
+                    props.onAutoHeight(h)
+                }
             } else if (props.snapPoints) {
                 if (
                     height -
                     (nearSnapPoints[0] + (nearSnapPoints[1] - nearSnapPoints[0]) / 2) >
                     nowHeight.current
                 ) {
-                    nowHeight.current = height - nearSnapPoints[1];
-                    modalHeight.value = withSpring(height - nearSnapPoints[1], {
+                    h = height - nearSnapPoints[1];
+
+                    nowHeight.current = h;
+                    modalHeight.value = withSpring(h, {
                         mass: props.springMass ?? 0.7,
                     });
                 } else {
-                    nowHeight.current = height - nearSnapPoints[0];
-                    modalHeight.value = withSpring(height - nearSnapPoints[0], {
+                    h = height - nearSnapPoints[0];
+
+                    nowHeight.current = h;
+                    modalHeight.value = withSpring(h, {
                         mass: props.springMass ?? 0.7,
                     });
+                }
+
+                if (props.onAutoHeight) {
+                    props.onAutoHeight(h)
                 }
             }
         }
