@@ -1,0 +1,28 @@
+{
+  "name": "rn-simple-bottom-sheet",
+  "version": "1.0.0",
+  "main": "index.tsx",
+  "license": "THE BEER-WARE LICENSE",
+  "keywords": [
+    "react-component",
+    "react-native",
+    "ios",
+    "android",
+    "bottom-sheet",
+    "react",
+    "modal",
+    "rn"
+  ],
+  "dependencies": {
+    "styled-components": "^5.3.6",
+    "react-native-reanimated": "^2.14.4",
+    "rn-iphone-helper": "^2.0.0",
+    "react-native-gesture-handler": "^2.9.0",
+    "@types/styled-components-react-native": "^5.2.1",
+    "@tsconfig/react-native": "^2.0.2"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  }
+}
