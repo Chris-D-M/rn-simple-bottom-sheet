@@ -1,7 +1,7 @@
 {
   "name": "@chrisdnm/rn-simple-bottom-sheet",
-  "version": "1.0.3",
-  "main": "index.tsx",
+  "version": "1.0.4",
+  "main": "src/index.tsx",
   "license": "THE BEER-WARE LICENSE",
   "repository": "https://github.com/Chris-D-M/rn-simple-bottom-sheet",
   "homepage": "https://github.com/Chris-D-M/rn-simple-bottom-sheet",
@@ -16,11 +16,9 @@
     "rn"
   ],
   "dependencies": {
-    "styled-components": "^5.3.6",
     "react-native-reanimated": "^2.14.4",
     "rn-iphone-helper": "^2.0.0",
     "react-native-gesture-handler": "^2.9.0",
-    "@types/styled-components-react-native": "^5.2.1",
     "@tsconfig/react-native": "^2.0.2"
   },
   "peerDependencies": {
