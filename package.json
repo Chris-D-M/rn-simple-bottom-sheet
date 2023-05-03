@@ -1,6 +1,6 @@
 {
   "name": "@chrisdnm/rn-simple-bottom-sheet",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "main": "src/index.tsx",
   "license": "THE BEER-WARE LICENSE",
   "repository": "https://github.com/Chris-D-M/rn-simple-bottom-sheet",
@@ -16,24 +16,26 @@
     "rn"
   ],
   "dependencies": {
-    "react-native-reanimated": "^2.14.4",
-    "rn-iphone-helper": "^2.0.0",
+    "@tsconfig/react-native": ">2.0.2",
     "react-native-gesture-handler": "^2.9.0",
-    "@tsconfig/react-native": "^2.0.2"
+    "react-native-reanimated": ">2.14.4",
+    "rn-iphone-helper": ">2.0.0"
   },
   "peerDependencies": {
     "react": "*",
     "react-native": "*"
   },
   "devDependencies": {
-    "prettier": "^2.7.1",
-    "typescript": "^4.8.3",
     "@types/eslint": "^8.4.6",
     "@types/react": "18.0.21",
     "@types/react-native": "^0.70.3",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "babel-eslint": "^10.1.0",
     "eslint": "^8.24.0",
-    "eslint-plugin-jest": "^27.0.4"
-  }
+    "eslint-plugin-jest": "^27.0.4",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.3"
+  },
+  "author": "kr-yeon <hhyy8892@gmail.com>",
+  "private": false
 }
