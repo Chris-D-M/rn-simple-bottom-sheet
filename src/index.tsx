@@ -127,7 +127,7 @@ export default forwardRef<
           (props.autoHeight && (props.dragable ?? props.visibleIndicator)) ||
           (!props.autoHeight && (props.dragable ?? props.visibleIndicator))
         ) {
-          return 0;
+          return nowHeight.current - 30;
         } else {
           return nowHeight.current;
         }
