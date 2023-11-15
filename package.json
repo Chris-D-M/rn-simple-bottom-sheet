@@ -1,6 +1,6 @@
 {
   "name": "@chrisdnm/rn-simple-bottom-sheet",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "src/index.tsx",
   "license": "THE BEER-WARE LICENSE",
   "repository": "https://github.com/Chris-D-M/rn-simple-bottom-sheet",

@@ -8,8 +8,10 @@ import React, {
   useState,
 } from 'react';
 import {
+  Dimensions,
   Modal,
   ModalProps,
+  Platform,
   Pressable,
   StyleSheet,
   useWindowDimensions,
@@ -18,13 +20,13 @@ import {
 } from 'react-native';
 import Animated, {
   cancelAnimation,
-  runOnJS,
+  runOnJS, runOnUI,
   useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+  withTiming
+} from "react-native-reanimated";
 import { getBottomInset } from 'rn-iphone-helper';
 import {
   GestureEventPayload,
@@ -32,9 +34,9 @@ import {
   PanGestureHandler,
   PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler';
+import {getStatusBarHeight} from 'react-native-safearea-height';
 
 const AnimatePressable = Animated.createAnimatedComponent(Pressable);
-
 export const BottomSheetModalContainerHeight = 16 + getBottomInset();
 export const IndicatorHeight = 36;
 
@@ -60,6 +62,10 @@ export default forwardRef<
     animationDuration?: number;
     springMass?: number;
     onAutoHeight?: (height: number) => void;
+    autoHeight?: boolean;
+    visibleIndicator?: boolean;
+    rootViewPaddingHorizontal?: number;
+    dragable?: boolean;
   }
 >(function (props, ref) {
   const { height } = useWindowDimensions();
@@ -77,8 +83,14 @@ export default forwardRef<
     }),
     [height, props.gap]
   );
+  const realScreenHeight = useMemo<number>(() =>
+      Dimensions.get('screen').height - (getBottomInset() ?? 0) - getStatusBarHeight(false),
+    [height]);
+  const isIos = useMemo<boolean>(() => Platform.OS === 'ios', []);
+
 
   const nowHeight = useRef(0);
+  const childrenHeight = useRef<null | number>(null);
 
   const unVisibleModal = useCallback(() => {
     cancelAnimation(modalHeight);
@@ -105,35 +117,50 @@ export default forwardRef<
       const changeHeight = nowHeight.current + event.translationY;
 
       function getMaximum() {
-        if (props.snapPoints && props.snapPoints.length >= 2) {
+        if (props.snapPoints && props.snapPoints.length >= 1) {
           return (
             height -
             props.snapPoints[props.snapPoints.length - 1] -
             (props.gap ?? 32)
           );
-        } else if (props.snapPoints) {
-          return height - props.snapPoints[0] - (props.gap ?? 32);
+        } else if (
+          (props.autoHeight && (props.dragable ?? props.visibleIndicator)) ||
+          (!props.autoHeight && (props.dragable ?? props.visibleIndicator))
+        ) {
+          return 0;
         } else {
           return nowHeight.current;
         }
       }
 
       if (
-        props.snapPoints?.[0] &&
-        changeHeight < height - props.snapPoints[0] &&
+        (
+          props.snapPoints?.[0] ||
+          (props.autoHeight && (props.dragable ?? props.visibleIndicator)) ||
+          (!props.autoHeight && (props.dragable ?? props.visibleIndicator))
+        ) &&
+        changeHeight < height - (props.snapPoints?.[0] ?? 0) &&
         changeHeight > getMaximum()
       ) {
         modalHeight.value = nowHeight.current + event.translationY;
       }
     },
-    [height, modalHeight, props.gap, props.snapPoints]
+    [
+      height,
+      modalHeight,
+      props.gap,
+      props.snapPoints,
+      props.autoHeight,
+      props.dragable,
+      props.visibleIndicator
+    ],
   );
 
   const onPanGestureEnd = useCallback(() => {
-    nowHeight.current = modalHeight.value;
+    let h = 0;
 
     if (props.snapPoints) {
-      let h = 0;
+      nowHeight.current = modalHeight.value;
 
       const minFilteredArr = props.snapPoints.filter(
         s => s <= height - nowHeight.current
@@ -150,10 +177,6 @@ export default forwardRef<
         modalHeight.value = withSpring(h, {
           mass: props.springMass ?? 0.7,
         });
-
-        if (props.onAutoHeight) {
-          props.onAutoHeight(h);
-        }
       } else if (props.snapPoints) {
         if (
           height -
@@ -174,11 +197,27 @@ export default forwardRef<
             mass: props.springMass ?? 0.7,
           });
         }
-
-        if (props.onAutoHeight) {
-          props.onAutoHeight(h);
-        }
       }
+    } else {
+      if (
+        (height - modalHeight.value) >
+        ((height - nowHeight.current) / 2)
+      ) {
+        h = nowHeight.current;
+
+        nowHeight.current = h;
+        modalHeight.value = withSpring(h, {
+          mass: props.springMass ?? 0.7,
+        });
+      } else {
+        h = height;
+
+        unVisibleModal();
+      }
+    }
+
+    if (props.onAutoHeight) {
+      props.onAutoHeight(h);
     }
   }, [height, modalHeight, props]);
 
@@ -191,10 +230,23 @@ export default forwardRef<
     ref,
     () => ({
       visible: (modal_height?: number) => {
-        if (!modal_height && !props.snapPoints) {
+        if (!modal_height && !props.snapPoints && !props.autoHeight) {
           console.warn(
             'modal_height and snapPoints is not valid. Pls write and try again'
           );
+        } else if (props.autoHeight) {
+          setVisible(true);
+          if (props.onVisible) {
+            props.onVisible();
+          }
+          cancelAnimation(modalHeight);
+
+          const autoHeight = (childrenHeight?.current ?? 0) + (props.snapPoints ? IndicatorHeight : 0) + (getBottomInset() ?? 24);
+
+          nowHeight.current = height - autoHeight;
+          modalHeight.value = withTiming(height - autoHeight, {
+            duration: 250,
+          });
         } else if (modal_height) {
           setVisible(true);
           if (props.onVisible) {
@@ -259,10 +311,32 @@ export default forwardRef<
                 modalStyle,
                 props.modalContainerStyle ?? {},
               ]}>
-              {!!props.snapPoints?.length && (
+              {(!!props.snapPoints?.length || props.visibleIndicator) && (
                 <View style={[styles.indicator, props.indicatorStyle ?? {}]} />
               )}
-              {props.children}
+              <View
+                style={[styles.view, {paddingHorizontal: props.rootViewPaddingHorizontal ?? 20}]}
+                onLayout={e => {
+                  if (props.autoHeight) {
+                    childrenHeight.current = e.nativeEvent.layout.height;
+
+                    cancelAnimation(modalHeight);
+
+                    const autoHeight = (childrenHeight?.current ?? 0) +
+                      (props.snapPoints?.length || props.visibleIndicator ? IndicatorHeight : 0) +
+                      (getBottomInset() ? getBottomInset() : 20) +
+                      /* iOS sceen height is windowHeight + statusBar + bottomInset */
+                      (isIos ? 0 : (realScreenHeight - height - (realScreenHeight - height)));
+
+                    nowHeight.current = height - autoHeight;
+                    modalHeight.value = withTiming(height - autoHeight, {
+                      duration: 250,
+                    });
+                  }
+                }}
+              >
+                {props.children}
+              </View>
             </AnimatePressable>
           </AnimatePressable>
         </PanGestureHandler>
@@ -298,4 +372,8 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     opacity: 0.4,
   },
+  view: {
+    display: 'flex',
+    alignItems: 'center',
+  }
 });
